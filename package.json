@@ -1,0 +1,44 @@
+{
+  "name": "revy-engine",
+  "version": "0.4.2",
+  "description": "Levy Flight Cross-Chain Routing Engine",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "benchmark": "tsx benchmarks/index.ts",
+    "benchmark:live": "tsx benchmarks/live-benchmark.ts",
+    "benchmark:large": "tsx benchmarks/live-benchmark-large.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/ tests/"
+  },
+  "keywords": [
+    "cross-chain",
+    "routing",
+    "defi",
+    "levy-flight",
+    "bridge",
+    "arbitrum",
+    "solana",
+    "ethereum"
+  ],
+  "author": "Revy",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/REVY2026/revy"
+  },
+  "homepage": "https://revy.fun",
+  "dependencies": {
+    "@lifi/sdk": "^3.16.3",
+    "@lifi/types": "^17.68.1",
+    "@openzeppelin/contracts": "^5.6.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  }
+}
