@@ -13,3 +13,21 @@ export interface Bridge {
   flatFeeUsd: number;
   gasUsd: number;
 }
+
+export interface RouteHop {
+  fromChain: string;
+  toChain: string;
+  bridge: string;
+  feePercent: number;
+  flatFeeUsd: number;
+  gasUsd: number;
+}
+
+export interface Route {
+  hops: RouteHop[];
+  totalFeePercent: number;
+  totalFlatFeeUsd: number;
+  totalGasUsd: number;
+  totalCostUsd: number;
+  hopCount: number;
+}
