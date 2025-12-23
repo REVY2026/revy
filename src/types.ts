@@ -31,3 +31,16 @@ export interface Route {
   totalCostUsd: number;
   hopCount: number;
 }
+
+export interface RouteRequest {
+  fromChain: string;
+  toChain: string;
+  amountUsd: number;
+}
+
+export interface LevyParams {
+  mu: number;
+  iterations: number;
+  maxHops: number;
+  localThreshold: number;
+}
