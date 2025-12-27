@@ -98,3 +98,53 @@ export const BRIDGES: Bridge[] = [
   { id: 'orbiter-base-scroll', name: 'Orbiter', from: 'base', to: 'scroll', feePercent: 0.02, flatFeeUsd: 0.2, avgLatencyMs: 25000, maxAmount: 1000000, minAmount: 1, reliability: 0.96 },
   { id: 'orbiter-base-zksync', name: 'Orbiter', from: 'base', to: 'zksync', feePercent: 0.02, flatFeeUsd: 0.2, avgLatencyMs: 25000, maxAmount: 1000000, minAmount: 1, reliability: 0.96 },
   { id: 'orbiter-base-linea', name: 'Orbiter', from: 'base', to: 'linea', feePercent: 0.015, flatFeeUsd: 0.15, avgLatencyMs: 20000, maxAmount: 1000000, minAmount: 1, reliability: 0.97 },
+  { id: 'orbiter-scroll-zksync', name: 'Orbiter', from: 'scroll', to: 'zksync', feePercent: 0.015, flatFeeUsd: 0.15, avgLatencyMs: 20000, maxAmount: 500000, minAmount: 1, reliability: 0.95 },
+
+  // Mantle / Blast / Manta connections
+  { id: 'stargate-eth-mantle', name: 'Stargate', from: 'ethereum', to: 'mantle', feePercent: 0.05, flatFeeUsd: 2.5, avgLatencyMs: 600000, maxAmount: 3000000, minAmount: 1, reliability: 0.96 },
+  { id: 'across-eth-blast', name: 'Across', from: 'ethereum', to: 'blast', feePercent: 0.04, flatFeeUsd: 1.5, avgLatencyMs: 180000, maxAmount: 3000000, minAmount: 1, reliability: 0.96 },
+  { id: 'celer-arb-manta', name: 'cBridge', from: 'arbitrum', to: 'manta', feePercent: 0.03, flatFeeUsd: 0.5, avgLatencyMs: 60000, maxAmount: 1000000, minAmount: 1, reliability: 0.95 },
+];
+
+export class ChainGraph {
+  private chains: Map<string, Chain> = new Map();
+  private bridges: Bridge[] = [];
+  private adjacency: Map<string, Bridge[]> = new Map();
+
+  constructor(chains: Chain[], bridges: Bridge[]) {
+    for (const chain of chains) {
+      this.chains.set(chain.id, chain);
+      this.adjacency.set(chain.id, []);
+    }
+    for (const bridge of bridges) {
+      if (this.chains.has(bridge.from) && this.chains.has(bridge.to)) {
+        this.bridges.push(bridge);
+        this.adjacency.get(bridge.from)!.push(bridge);
+      }
+    }
+  }
+
+  getChain(id: string): Chain | undefined {
+    return this.chains.get(id);
+  }
+
+  getAllChains(): Chain[] {
+    return Array.from(this.chains.values());
+  }
+
+  getBridgesFrom(chainId: string): Bridge[] {
+    return this.adjacency.get(chainId) || [];
+  }
+
+  getAllBridges(): Bridge[] {
+    return this.bridges;
+  }
+
+  getNeighbors(chainId: string): string[] {
+    const bridges = this.getBridgesFrom(chainId);
+    return [...new Set(bridges.map(b => b.to))];
+  }
+
+  // Graph distance (minimum hops between two chains)
+  bfsDistance(from: string, to: string): number {
+    if (from === to) return 0;
