@@ -38,3 +38,33 @@ export function shuffleArray<T>(array: T[]): T[] {
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
+}
+
+export function uniqueBy<T, K>(array: T[], keyFn: (item: T) => K): T[] {
+  const seen = new Set<K>();
+  return array.filter(item => {
+    const key = keyFn(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+export function formatUsd(amount: number): string {
+  return `$${amount.toFixed(2)}`;
+}
+
+export function formatPercent(bps: number): string {
+  return `${(bps / 100).toFixed(2)}%`;
+}
+
+export function hashPath(path: string[]): string {
+  return path.join('→');
+}
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
