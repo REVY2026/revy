@@ -148,3 +148,37 @@ export class ChainGraph {
   // Graph distance (minimum hops between two chains)
   bfsDistance(from: string, to: string): number {
     if (from === to) return 0;
+    const visited = new Set<string>([from]);
+    const queue: [string, number][] = [[from, 0]];
+
+    while (queue.length > 0) {
+      const [current, dist] = queue.shift()!;
+      for (const neighbor of this.getNeighbors(current)) {
+        if (neighbor === to) return dist + 1;
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push([neighbor, dist + 1]);
+        }
+      }
+    }
+    return Infinity;
+  }
+
+  // Get cheapest single bridge between two chains
+  cheapestDirectBridge(from: string, to: string, amountUsd: number): Bridge | null {
+    const bridges = this.getBridgesFrom(from).filter(
+      b => b.to === to && amountUsd >= b.minAmount && amountUsd <= b.maxAmount
+    );
+    if (bridges.length === 0) return null;
+
+    return bridges.reduce((best, b) => {
+      const costB = amountUsd * (b.feePercent / 100) + b.flatFeeUsd;
+      const costBest = amountUsd * (best.feePercent / 100) + best.flatFeeUsd;
+      return costB < costBest ? b : best;
+    });
+  }
+}
+
+export function createDefaultGraph(): ChainGraph {
+  return new ChainGraph(CHAINS, BRIDGES);
+}
