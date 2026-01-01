@@ -78,3 +78,73 @@ const DEFAULT_CONFIG: LevyFlightConfig = {
   maxHops: 5,
   iterations: 200,
   maxRoutes: 50,
+};
+
+// Core Levy Flight pathfinding
+export function levyFlightSearch(
+  graph: ChainGraph,
+  request: RouteRequest,
+  config: Partial<LevyFlightConfig> = {}
+): SearchResult {
+  const cfg = { ...DEFAULT_CONFIG, ...config };
+  const startTime = performance.now();
+  const allRoutes: Route[] = [];
+  let routesExplored = 0;
+
+  const allChains = graph.getAllChains().map(c => c.id);
+
+  for (let iter = 0; iter < cfg.iterations; iter++) {
+    const path: string[] = [request.fromChain];
+    const visited = new Set<string>([request.fromChain]);
+    let current = request.fromChain;
+    const hops: RouteHop[] = [];
+
+    for (let hop = 0; hop < cfg.maxHops; hop++) {
+      if (current === request.toChain) break;
+
+      const stepLength = levyStepLength(cfg.mu);
+      const stepType = classifyStep(stepLength);
+
+      let nextChain: string | null = null;
+
+      if (stepType === 'local') {
+        // Local hop: pick from direct neighbors, weighted by cost
+        const neighbors = graph.getNeighbors(current).filter(n => !visited.has(n));
+        if (neighbors.length === 0) break;
+
+        // Prefer neighbors closer to destination
+        const scored = neighbors.map(n => ({
+          chain: n,
+          dist: graph.bfsDistance(n, request.toChain),
+          directCost: computeHopCost(graph, current, n, request.amountUsd),
+        })).filter(s => s.directCost !== null);
+
+        if (scored.length === 0) break;
+
+        // Weighted selection: lower distance = higher weight, with randomness
+        const weights = scored.map(s => {
+          const distWeight = 1 / (s.dist + 1);
+          const costWeight = 1 / (s.directCost!.flatFeeUsd + s.directCost!.feePercent * request.amountUsd / 100 + 0.01);
+          return distWeight * costWeight * (0.5 + Math.random());
+        });
+        const totalWeight = weights.reduce((a, b) => a + b, 0);
+        let r = Math.random() * totalWeight;
+        let chosen = scored[0];
+        for (let i = 0; i < weights.length; i++) {
+          r -= weights[i];
+          if (r <= 0) { chosen = scored[i]; break; }
+        }
+
+        nextChain = chosen.chain;
+      } else {
+        // Long leap: jump to a non-adjacent chain (Levy Flight's signature move)
+        // Pick a chain that is NOT a direct neighbor but is reachable
+        const neighbors = new Set(graph.getNeighbors(current));
+        const leapCandidates = allChains.filter(
+          c => c !== current && !visited.has(c) && !neighbors.has(c)
+        );
+
+        if (leapCandidates.length === 0) {
+          // Fall back to neighbors if no leap targets
+          const fallback = graph.getNeighbors(current).filter(n => !visited.has(n));
+          if (fallback.length === 0) break;
