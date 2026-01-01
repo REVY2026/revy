@@ -148,3 +148,53 @@ export function levyFlightSearch(
           // Fall back to neighbors if no leap targets
           const fallback = graph.getNeighbors(current).filter(n => !visited.has(n));
           if (fallback.length === 0) break;
+          nextChain = fallback[Math.floor(Math.random() * fallback.length)];
+        } else {
+          // Weight leaps toward destination
+          const scored = leapCandidates.map(c => ({
+            chain: c,
+            dist: graph.bfsDistance(c, request.toChain),
+          }));
+          const weights = scored.map(s => 1 / (s.dist + 1) * (0.3 + Math.random()));
+          const totalWeight = weights.reduce((a, b) => a + b, 0);
+          let r = Math.random() * totalWeight;
+          let chosen = scored[0];
+          for (let i = 0; i < weights.length; i++) {
+            r -= weights[i];
+            if (r <= 0) { chosen = scored[i]; break; }
+          }
+
+          // For a leap, we need to find an actual bridge path to get there
+          // Check if there's a 2-hop path through any intermediate
+          const intermediates = graph.getNeighbors(current).filter(n => !visited.has(n));
+          let foundLeap = false;
+
+          for (const mid of intermediates) {
+            if (graph.getNeighbors(mid).includes(chosen.chain)) {
+              // 2-hop leap: current -> mid -> chosen
+              const hop1 = computeHopCost(graph, current, mid, request.amountUsd);
+              const hop2 = computeHopCost(graph, mid, chosen.chain, request.amountUsd);
+              if (hop1 && hop2) {
+                hops.push(hop1, hop2);
+                visited.add(mid);
+                visited.add(chosen.chain);
+                path.push(mid, chosen.chain);
+                current = chosen.chain;
+                foundLeap = true;
+                break;
+              }
+            }
+          }
+
+          if (!foundLeap) {
+            // Direct bridge if available
+            const direct = computeHopCost(graph, current, chosen.chain, request.amountUsd);
+            if (direct) {
+              nextChain = chosen.chain;
+            } else {
+              // Fall back to any neighbor
+              const fb = graph.getNeighbors(current).filter(n => !visited.has(n));
+              if (fb.length === 0) break;
+              nextChain = fb[Math.floor(Math.random() * fb.length)];
+            }
+          } else {
