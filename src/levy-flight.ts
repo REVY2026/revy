@@ -198,3 +198,56 @@ export function levyFlightSearch(
               nextChain = fb[Math.floor(Math.random() * fb.length)];
             }
           } else {
+            nextChain = null; // Already handled in leap
+          }
+        }
+      }
+
+      if (nextChain) {
+        const hop = computeHopCost(graph, current, nextChain, request.amountUsd);
+        if (!hop) break;
+        hops.push(hop);
+        visited.add(nextChain);
+        path.push(nextChain);
+        current = nextChain;
+      }
+    }
+
+    // If we haven't reached destination, try one more direct hop
+    if (current !== request.toChain && hops.length < cfg.maxHops) {
+      const finalHop = computeHopCost(graph, current, request.toChain, request.amountUsd);
+      if (finalHop) {
+        hops.push(finalHop);
+        current = request.toChain;
+      }
+    }
+
+    routesExplored++;
+
+    if (current === request.toChain && hops.length > 0) {
+      allRoutes.push(buildRoute(hops, request.amountUsd));
+    }
+  }
+
+  // Sort by total cost
+  allRoutes.sort((a, b) => a.totalCostUsd - b.totalCostUsd);
+
+  // Deduplicate (same hop sequence)
+  const seen = new Set<string>();
+  const uniqueRoutes = allRoutes.filter(r => {
+    const key = r.hops.map(h => h.bridgeId || h.poolId).join('->');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, cfg.maxRoutes);
+
+  const timeMs = performance.now() - startTime;
+
+  return {
+    algorithm: `Levy Flight (mu=${cfg.mu}, iter=${cfg.iterations}, maxHops=${cfg.maxHops})`,
+    bestRoute: uniqueRoutes[0] || null,
+    routesExplored,
+    timeMs,
+    allRoutes: uniqueRoutes,
+  };
+}
