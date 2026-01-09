@@ -48,3 +48,33 @@ export function estimateRouteCost(
   let remainingAmount = initialAmountUsd;
 
   for (const hop of route.hops) {
+    const hopCost = estimateHopCost(hop, remainingAmount);
+    totalGas += hopCost.gasUsd;
+    totalBridgeFee += hopCost.bridgeFeeUsd;
+    totalSlippage += hopCost.slippageUsd;
+    totalProtocolFee += hopCost.protocolFeeUsd;
+    remainingAmount -= hopCost.totalUsd;
+  }
+
+  return {
+    gasUsd: totalGas,
+    bridgeFeeUsd: totalBridgeFee,
+    slippageUsd: totalSlippage,
+    protocolFeeUsd: totalProtocolFee,
+    totalUsd: totalGas + totalBridgeFee + totalSlippage + totalProtocolFee,
+  };
+}
+
+export function compareRouteCosts(
+  routes: Route[],
+  amountUsd: number
+): Array<{ route: Route; cost: CostBreakdown; rank: number }> {
+  const withCosts = routes.map(route => ({
+    route,
+    cost: estimateRouteCost(route, amountUsd),
+    rank: 0,
+  }));
+
+  withCosts.sort((a, b) => a.cost.totalUsd - b.cost.totalUsd);
+  withCosts.forEach((item, index) => {
+    item.rank = index + 1;
