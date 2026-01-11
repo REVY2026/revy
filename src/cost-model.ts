@@ -78,3 +78,42 @@ export function compareRouteCosts(
   withCosts.sort((a, b) => a.cost.totalUsd - b.cost.totalUsd);
   withCosts.forEach((item, index) => {
     item.rank = index + 1;
+  });
+
+  return withCosts;
+}
+
+export function costSavingsPercent(
+  directCostUsd: number,
+  optimizedCostUsd: number
+): number {
+  if (directCostUsd <= 0) return 0;
+  return ((directCostUsd - optimizedCostUsd) / directCostUsd) * 100;
+}
+
+export function estimateExecutionTime(route: Route): number {
+  const timePerHop: Record<string, number> = {
+    ethereum: 180,
+    arbitrum: 5,
+    optimism: 5,
+    base: 5,
+    polygon: 10,
+    bsc: 15,
+    avalanche: 10,
+    solana: 2,
+    sui: 2,
+    aptos: 3,
+    scroll: 15,
+    zksync: 20,
+    linea: 15,
+    fantom: 5,
+  };
+
+  let totalSeconds = 0;
+  for (const hop of route.hops) {
+    const fromTime = timePerHop[hop.fromChain.toLowerCase()] ?? 30;
+    const toTime = timePerHop[hop.toChain.toLowerCase()] ?? 30;
+    totalSeconds += Math.max(fromTime, toTime) + 60;
+  }
+  return totalSeconds;
+}
