@@ -38,3 +38,33 @@ export function assessRouteRisk(
 ): RiskAssessment {
   const multiplier = calculateRiskMultiplier(route.hopCount);
   const adjustedCostUsd = baseCostUsd * multiplier;
+  const riskLevel = getRiskLevel(multiplier);
+  const warnings: string[] = [];
+
+  if (route.hopCount >= 4) {
+    warnings.push(`High hop count (${route.hopCount}): increased execution risk`);
+  }
+
+  if (multiplier > RISK_DEFAULTS.maxAcceptableMultiplier) {
+    warnings.push('Risk multiplier exceeds safety threshold');
+  }
+
+  const chains = route.hops.map(h => h.fromChain);
+  chains.push(route.hops[route.hops.length - 1]?.toChain ?? '');
+  const uniqueChains = new Set(chains.filter(Boolean));
+  if (uniqueChains.size < chains.filter(Boolean).length) {
+    warnings.push('Route contains duplicate chain visits');
+  }
+
+  const hasSlowChain = chains.some(c =>
+    ['ethereum', 'zksync', 'scroll'].includes(c.toLowerCase())
+  );
+  if (hasSlowChain && route.hopCount > 2) {
+    warnings.push('Route includes slow-finality chain with multiple hops');
+  }
+
+  return {
+    multiplier,
+    adjustedCostUsd,
+    riskLevel,
+    hopCount: route.hopCount,
