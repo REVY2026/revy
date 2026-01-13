@@ -68,3 +68,22 @@ export function assessRouteRisk(
     adjustedCostUsd,
     riskLevel,
     hopCount: route.hopCount,
+    warnings,
+  };
+}
+
+export function rankRoutesByRiskAdjustedCost(
+  routes: Array<{ route: Route; costUsd: number }>
+): Array<{ route: Route; costUsd: number; riskAdjustedCostUsd: number; risk: RiskAssessment }> {
+  const assessed = routes.map(({ route, costUsd }) => {
+    const risk = assessRouteRisk(route, costUsd);
+    return {
+      route,
+      costUsd,
+      riskAdjustedCostUsd: risk.adjustedCostUsd,
+      risk,
+    };
+  });
+
+  return assessed.sort((a, b) => a.riskAdjustedCostUsd - b.riskAdjustedCostUsd);
+}
