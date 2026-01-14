@@ -47,3 +47,43 @@ export function filterValidRoutes(
     return true;
   });
 }
+
+export function scoreRoute(
+  route: Route,
+  amountUsd: number
+): OptimizedRoute {
+  const cost = estimateRouteCost(route, amountUsd);
+  const risk = assessRouteRisk(route, cost.totalUsd);
+
+  const chains = route.hops.map(h => h.fromChain);
+  if (route.hops.length > 0) {
+    chains.push(route.hops[route.hops.length - 1].toChain);
+  }
+  const pathHash = hashPath(chains);
+
+  const score = risk.adjustedCostUsd;
+
+  return { route, cost, risk, score, pathHash };
+}
+
+export function optimizeRoutes(
+  routes: Route[],
+  request: RouteRequest
+): OptimizedRoute[] {
+  const valid = filterValidRoutes(routes, request);
+  const unique = deduplicateRoutes(valid);
+
+  const scored = unique.map(route => scoreRoute(route, request.amountUsd));
+
+  scored.sort((a, b) => a.score - b.score);
+
+  return scored.slice(0, SEARCH_LIMITS.maxCandidates);
+}
+
+export function getBestRoute(
+  routes: Route[],
+  request: RouteRequest
+): OptimizedRoute | null {
+  const optimized = optimizeRoutes(routes, request);
+  return optimized.length > 0 ? optimized[0] : null;
+}
