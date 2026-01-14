@@ -87,3 +87,20 @@ export function getBestRoute(
   const optimized = optimizeRoutes(routes, request);
   return optimized.length > 0 ? optimized[0] : null;
 }
+
+export function calculateSavings(
+  directCostUsd: number | null,
+  bestCostUsd: number
+): { absoluteUsd: number; percentSaved: number } {
+  if (directCostUsd === null || directCostUsd <= 0) {
+    return { absoluteUsd: 0, percentSaved: 0 };
+  }
+
+  const absoluteUsd = directCostUsd - bestCostUsd;
+  const percentSaved = (absoluteUsd / directCostUsd) * 100;
+
+  return {
+    absoluteUsd: Math.max(0, absoluteUsd),
+    percentSaved: Math.max(0, percentSaved),
+  };
+}
