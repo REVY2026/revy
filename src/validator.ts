@@ -47,3 +47,51 @@ export function validateRouteRequest(
       errors.push(`fromChain "${request.fromChain}" is not a supported chain`);
     }
   }
+
+  if (request.toChain) {
+    const chains = graph.getChains();
+    const toExists = chains.some(c =>
+      c.name.toLowerCase() === request.toChain.toLowerCase()
+    );
+    if (!toExists) {
+      errors.push(`toChain "${request.toChain}" is not a supported chain`);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+export function validateLevyParams(params: {
+  mu?: number;
+  iterations?: number;
+  maxHops?: number;
+}): ValidationResult {
+  const errors: string[] = [];
+
+  const mu = params.mu ?? LEVY_DEFAULTS.mu;
+  if (mu <= 1 || mu >= 3) {
+    errors.push('mu must be between 1 and 3 (exclusive)');
+  }
+
+  const iterations = params.iterations ?? LEVY_DEFAULTS.iterations;
+  if (iterations < 1 || iterations > 10000) {
+    errors.push('iterations must be between 1 and 10000');
+  }
+
+  const maxHops = params.maxHops ?? LEVY_DEFAULTS.maxHops;
+  if (maxHops < 1 || maxHops > 10) {
+    errors.push('maxHops must be between 1 and 10');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+export function sanitizeChainName(chain: string): string {
+  return chain.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+}
