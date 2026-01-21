@@ -118,3 +118,44 @@ contract RevyRouter is Ownable {
         emit RouteExecuted(
             msg.sender,
             _token,
+            _amount,
+            _toChainId,
+            fee,
+            block.timestamp
+        );
+    }
+
+    // ═══════════════════════════════════
+    // Admin functions
+    // ═══════════════════════════════════
+
+    function setFeeBasisPoints(uint256 _newFee) external onlyOwner {
+        require(_newFee <= 50, "Fee too high"); // Max 0.5%
+        feeBasisPoints = _newFee;
+        emit FeeUpdated(_newFee);
+    }
+
+    function setFeeCollector(address _newCollector) external onlyOwner {
+        require(_newCollector != address(0), "Zero address");
+        feeCollector = _newCollector;
+    }
+
+    function setRouterBackend(address _newBackend) external onlyOwner {
+        require(_newBackend != address(0), "Zero address");
+        routerBackend = _newBackend;
+        emit RouterBackendUpdated(_newBackend);
+    }
+
+    // Emergency: recover stuck tokens
+    function rescueToken(address _token, uint256 _amount) external onlyOwner {
+        IERC20(_token).safeTransfer(owner(), _amount);
+    }
+
+    function rescueNative() external onlyOwner {
+        (bool success, ) = owner().call{value: address(this).balance}("");
+        require(success, "Rescue failed");
+    }
+
+    // Accept native token transfers
+    receive() external payable {}
+}
