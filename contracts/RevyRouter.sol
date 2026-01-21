@@ -78,3 +78,43 @@ contract RevyRouter is Ownable {
             block.timestamp
         );
     }
+
+    /**
+     * @notice Route ERC20 tokens cross-chain
+     * @param _token Token contract address
+     * @param _amount Amount to route
+     * @param _callData Encoded call data for the routing backend
+     * @param _toChainId Destination chain ID for event logging
+     */
+    function routeToken(
+        address _token,
+        uint256 _amount,
+        bytes calldata _callData,
+        uint256 _toChainId
+    ) external {
+        require(_amount > 0, "Zero amount");
+
+        // Transfer tokens from user to this contract
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+
+        // Calculate and collect fee
+        uint256 fee = (_amount * feeBasisPoints) / 10000;
+        uint256 routeAmount = _amount - fee;
+
+        // Send fee to collector
+        if (fee > 0) {
+            IERC20(_token).safeTransfer(feeCollector, fee);
+        }
+
+        // Approve routing backend to spend tokens
+        IERC20(_token).safeIncreaseAllowance(routerBackend, routeAmount);
+
+        // Forward to routing backend
+        (bool success, ) = routerBackend.call(_callData);
+        require(success, "Route execution failed");
+
+        totalRoutes++;
+
+        emit RouteExecuted(
+            msg.sender,
+            _token,
