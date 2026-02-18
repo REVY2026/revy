@@ -37,3 +37,44 @@ The engine implements a 5-layer pipeline:
 ---
 
 ## Benchmark Results
+
+| Route | Direct | Dijkstra | Levy Flight |
+|-------|--------|----------|-------------|
+| ETH to ARB ($10k) | $6.20 | $6.20 | **$6.20** |
+| ETH to SOL ($50k) | $1,515 | $1,350 | **$1,340** |
+| SOL to Scroll ($5k) | No route | $270.50 | **$267.00** |
+| Fantom to Sui ($20k) | No route | $1,008 | **$988.60** |
+| OP to zkSync ($15k) | No route | $307.50 | **$300.00** |
+| BSC to Aptos ($30k) | No route | $1,614 | **$1,581** |
+
+Where direct is cheapest, Levy Flight picks direct. Where no direct route exists, it finds multi-hop paths that no other router discovers.
+
+---
+
+## Architecture
+
+```
+src/
+├── types.ts            Type definitions
+├── config.ts           Engine configuration
+├── graph.ts            Chain graph (20 chains, 61 bridges)
+├── levy-flight.ts      Core pathfinding algorithm
+├── naive-search.ts     Baseline algorithms
+├── cost-model.ts       Cost simulation
+├── risk-scorer.ts      Risk assessment
+├── route-optimizer.ts  Route ranking
+├── validator.ts        Input validation
+├── utils.ts            Math utilities
+├── logger.ts           Structured logging
+└── index.ts            Public API
+
+contracts/
+└── RevyRouter.sol      On-chain router (Arbitrum)
+
+benchmarks/
+├── index.ts            Algorithm comparison
+├── live-benchmark.ts   Live API benchmarks
+└── live-benchmark-large.ts
+
+tests/
+├── graph.test.ts
