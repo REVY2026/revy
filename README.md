@@ -78,3 +78,92 @@ benchmarks/
 
 tests/
 ├── graph.test.ts
+├── levy-flight.test.ts
+├── cost-model.test.ts
+├── risk-scorer.test.ts
+├── utils.test.ts
+└── validator.test.ts
+```
+
+---
+
+## Usage
+
+```bash
+git clone https://github.com/REVY2026/revy.git
+cd revy
+npm install
+```
+
+Run benchmarks:
+
+```bash
+npm run benchmark
+```
+
+Run tests:
+
+```bash
+npm test
+```
+
+### Programmatic Usage
+
+```typescript
+import { ChainGraph, LevyFlightRouter, getBestRoute } from './src/index.js';
+
+const graph = new ChainGraph();
+const router = new LevyFlightRouter(graph);
+
+const routes = router.findRoutes({
+  fromChain: 'solana',
+  toChain: 'scroll',
+  amountUsd: 5000,
+});
+
+const best = getBestRoute(routes, {
+  fromChain: 'solana',
+  toChain: 'scroll',
+  amountUsd: 5000,
+});
+
+console.log(best?.cost.totalUsd);
+```
+
+---
+
+## Smart Contract
+
+**RevyRouter** deployed on Arbitrum One:
+
+[`0x75da9759d9e0a22d9b8a77ec1ec57f99e6759255`](https://arbiscan.io/address/0x75da9759d9e0a22d9b8a77ec1ec57f99e6759255)
+
+- 0.02% protocol fee (2 basis points)
+- Native and ERC-20 routing
+- Li.Fi Diamond backend integration
+- Owner-controlled fee and backend configuration
+- Emergency rescue functions
+
+---
+
+## Supported Chains
+
+Ethereum, Arbitrum, Optimism, Base, Polygon, BSC, Avalanche, Solana, Sui, Aptos, Scroll, zkSync Era, Linea, Manta Pacific, Celo, Gnosis, NEAR, Mantle, Blast, Fantom
+
+---
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Algorithm](docs/algorithm.md)
+- [API Reference](docs/api-reference.md)
+- [Changelog](CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
+
+---
+
+## Links
+
+- [revy.fun](https://revy.fun)
+- [x.com/revyfun](https://x.com/revyfun)
