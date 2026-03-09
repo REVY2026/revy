@@ -59,3 +59,4 @@ All tunable parameters are centralized in `config.ts`:
 - Cost: gas overrides, fee defaults, slippage
 - Risk: multiplier base, hop penalty, acceleration
 - Search: candidate limits, timeout
+// rev: 1
