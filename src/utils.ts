@@ -104,4 +104,4 @@ export function standardDeviation(values: number[]): number {
   const squaredDiffs = values.map(v => Math.pow(v - mean, 2));
   return Math.sqrt(squaredDiffs.reduce((a, b) => a + b, 0) / (values.length - 1));
 }
-// rev: 1
+// rev: 2
