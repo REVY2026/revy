@@ -43,3 +43,4 @@ All notable changes to the Revy engine are documented here.
 - Chain and bridge type definitions
 - Chain graph model with BFS distance calculation
 - Configuration module with defaults
+// rev: 1
