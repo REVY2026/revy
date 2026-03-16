@@ -50,3 +50,4 @@ jobs:
 
       - name: Lint
         run: npx eslint src/ tests/
+// rev: 1
