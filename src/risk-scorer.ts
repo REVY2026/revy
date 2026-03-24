@@ -87,4 +87,3 @@ export function rankRoutesByRiskAdjustedCost(
 
   return assessed.sort((a, b) => a.riskAdjustedCostUsd - b.riskAdjustedCostUsd);
 }
-// rev: 2

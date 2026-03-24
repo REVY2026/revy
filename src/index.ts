@@ -29,4 +29,3 @@ export type { ValidationResult } from './validator.js';
 export { createLogger, setLogLevel, getLogLevel } from './logger.js';
 
 export { levyStepLength, powerLawSample, weightedRandomSelect, hashPath, formatUsd, formatPercent, median, percentile, standardDeviation } from './utils.js';
-// rev: 1

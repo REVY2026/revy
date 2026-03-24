@@ -182,4 +182,3 @@ export class ChainGraph {
 export function createDefaultGraph(): ChainGraph {
   return new ChainGraph(CHAINS, BRIDGES);
 }
-// rev: 2

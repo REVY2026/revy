@@ -11,7 +11,10 @@
 
 **Cross-chain routing powered by the search algorithm apex predators use to hunt.**
 
-[App](https://revy.fun) | [Docs](https://revy.fun/docs) | [Contract](https://arbiscan.io/address/0x75da9759d9e0a22d9b8a77ec1ec57f99e6759255) | [Twitter](https://x.com/revyfun)
+[![App](https://img.shields.io/badge/App-revy.fun-00ff41?style=flat-square)](https://revy.fun)
+[![Docs](https://img.shields.io/badge/Docs-revy.fun%2Fdocs-00ff41?style=flat-square)](https://revy.fun/docs)
+[![Contract](https://img.shields.io/badge/Contract-Arbiscan-00ff41?style=flat-square)](https://arbiscan.io/address/0x75da9759d9e0a22d9b8a77ec1ec57f99e6759255)
+[![Twitter](https://img.shields.io/badge/Twitter-@revydotfun-00ff41?style=flat-square&logo=x&logoColor=white)](https://x.com/revydotfun)
 
 </div>
 
@@ -275,6 +278,6 @@ Ethereum, Arbitrum, Optimism, Base, Polygon, BSC, Avalanche, Solana, Sui, Aptos,
 
 **No route? We make one.**
 
-[revy.fun](https://revy.fun) | [x.com/revyfun](https://x.com/revyfun)
+[![App](https://img.shields.io/badge/revy.fun-ff6600?style=for-the-badge)](https://revy.fun) [![Twitter](https://img.shields.io/badge/@revydotfun-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/revydotfun) [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/REVY2026/revy)
 
 </div>

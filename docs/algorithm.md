@@ -67,4 +67,3 @@ function findRoutes(from, to, amount):
 - Average search time: < 50ms
 - Routes found for "impossible" pairs: 100% (where any path exists in the graph)
 - Cost improvement over direct: 3-11% average on multi-hop routes
-// rev: 1
