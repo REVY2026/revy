@@ -41,29 +41,94 @@ Revy:       SOL → Arbitrum → Scroll  $3.40   (route discovered)
 
 ## How It Works
 
-Revy uses **Levy Flight** -- a power-law distributed random walk that models how apex predators search for prey. Published in *Nature* (1999), cited 3200+ times. Not a whitepaper buzzword. Peer-reviewed math.
+Revy uses **Levy Flight** -- a power-law distributed random walk that models how apex predators search for prey. Published in *Nature* (1999), cited 3200+ times.
+
+### Other bridges see this:
 
 ```mermaid
 graph LR
-    A[Route Request] --> B[Chain Graph<br/>20 chains, 61 bridges]
-    B --> C[Levy Flight Search<br/>300 iterations, mu=2.0]
-    C --> D[Cost Simulation<br/>gas + fees + slippage]
-    D --> E[Risk Scoring<br/>hop-count penalty]
-    E --> F[Best Route]
+    SOL(("SOL")) -. "no route" .-> SCR(("Scroll"))
+
+    style SOL fill:#9945FF,stroke:#9945FF,color:#fff
+    style SCR fill:#FFEEDA,stroke:#FF684B,color:#000
+    linkStyle 0 stroke:#ff0000,stroke-dasharray:5
+```
+
+### Revy sees this:
+
+```mermaid
+graph LR
+    SOL(("SOL")) -->|"Wormhole<br/>$1.20"| ARB(("Arbitrum"))
+    ARB -->|"Stargate<br/>$2.20"| SCR(("Scroll"))
+
+    ETH(("ETH")) -.->|"$3.50"| ARB
+    SOL -.->|"$4.10"| BSC(("BSC"))
+    BSC -.->|"$2.80"| ETH
+    ETH -.->|"$3.20"| SCR
+    ARB -.->|"$1.50"| OP(("Optimism"))
+    OP -.->|"$2.10"| SCR
+
+    style SOL fill:#9945FF,stroke:#9945FF,color:#fff
+    style ARB fill:#28A0F0,stroke:#28A0F0,color:#fff
+    style SCR fill:#FFEEDA,stroke:#FF684B,color:#000
+    style ETH fill:#627EEA,stroke:#627EEA,color:#fff
+    style BSC fill:#F0B90B,stroke:#F0B90B,color:#000
+    style OP fill:#FF0420,stroke:#FF0420,color:#fff
+
+    linkStyle 0 stroke:#00ff41,stroke-width:3px
+    linkStyle 1 stroke:#00ff41,stroke-width:3px
+    linkStyle 2 stroke:#555,stroke-dasharray:5
+    linkStyle 3 stroke:#555,stroke-dasharray:5
+    linkStyle 4 stroke:#555,stroke-dasharray:5
+    linkStyle 5 stroke:#555,stroke-dasharray:5
+    linkStyle 6 stroke:#555,stroke-dasharray:5
+    linkStyle 7 stroke:#555,stroke-dasharray:5
+```
+
+> **Green path**: optimal route found by Levy Flight ($3.40, 2 hops)
+> **Dashed lines**: all candidate paths explored in < 2 seconds
+
+### Engine Pipeline
+
+```mermaid
+graph TB
+    subgraph INPUT
+        A["Route Request<br/><code>SOL → Scroll, $5k</code>"]
+    end
+
+    subgraph SEARCH ["LEVY FLIGHT SEARCH"]
+        direction TB
+        B["Chain Graph<br/>20 chains | 61 bridges"]
+        C["300 iterations<br/>mu = 2.0"]
+        D["Short steps → nearby chains<br/>Long leaps → cross ecosystem"]
+        B --> C --> D
+    end
+
+    subgraph EVAL ["ROUTE EVALUATION"]
+        direction TB
+        E["Cost Simulation<br/>gas + bridge fee + slippage"]
+        F["Risk Scoring<br/>hop penalty × acceleration"]
+        G["Dedup + Rank<br/>top 50 candidates"]
+        E --> F --> G
+    end
+
+    subgraph OUTPUT
+        H["Best Route<br/><code>SOL → ARB → Scroll  $3.40</code>"]
+    end
+
+    A --> B
+    D --> E
+    G --> H
 
     style A fill:#0a0a0a,stroke:#ff6600,color:#fff
     style B fill:#0a0a0a,stroke:#ff6600,color:#fff
     style C fill:#0a0a0a,stroke:#00ff41,color:#fff
-    style D fill:#0a0a0a,stroke:#ff6600,color:#fff
+    style D fill:#0a0a0a,stroke:#00ff41,color:#fff
     style E fill:#0a0a0a,stroke:#ff6600,color:#fff
-    style F fill:#0a0a0a,stroke:#00ff41,color:#fff
+    style F fill:#0a0a0a,stroke:#ff6600,color:#fff
+    style G fill:#0a0a0a,stroke:#ff6600,color:#fff
+    style H fill:#0a0a0a,stroke:#00ff41,color:#fff
 ```
-
-**Short steps** scan nearby chains (L2s, same ecosystem).
-**Long leaps** jump across ecosystem boundaries (EVM to Solana).
-**Cost simulation** scores every candidate route.
-**Risk scoring** penalizes excessive hops.
-When direct is cheapest, we pick direct.
 
 ---
 
